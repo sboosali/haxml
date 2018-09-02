@@ -12,7 +12,8 @@ import Prelude hiding (maybe,either)
 import Data.Maybe hiding (maybe)
 import Data.List (intersperse)
 import Data.Char (isSpace)
-import Text.PrettyPrint.HughesPJ
+import           Text.PrettyPrint.HughesPJ hiding ((<>))
+import qualified Text.PrettyPrint.HughesPJ as PP
 import Text.XML.HaXml.Types
 import Text.XML.HaXml.Namespaces
 
@@ -24,7 +25,7 @@ maybe :: (a->Doc) -> Maybe a -> Doc
 maybe _f Nothing  = empty
 maybe  f (Just x) = f x
 
---peref p   = text "%" <> text p <> text ";"
+--peref p   = text "%" PP.<> text p PP.<> text ";"
 
 ----
 
@@ -50,16 +51,16 @@ prolog (Prolog x m1 dtd m2)= maybe xmldecl x $$
                              vcat (map misc m1) $$
                              maybe doctypedecl dtd $$
                              vcat (map misc m2)
-xmldecl (XMLDecl v e sd)   = text "<?xml version='" <> text v <> text "'" <+>
+xmldecl (XMLDecl v e sd)   = text "<?xml version='" PP.<> text v PP.<> text "'" <+>
                              maybe encodingdecl e <+>
                              maybe sddecl sd <+>
                              text "?>"
 misc (Comment s)           = text "<!--" <+> text s <+> text "-->"
-misc (PI (n,s))            = text "<?" <> text n <+> text s <+> text "?>"
+misc (PI (n,s))            = text "<?" PP.<> text n <+> text s <+> text "?>"
 sddecl sd   | sd           = text "standalone='yes'"
             | otherwise    = text "standalone='no'"
 doctypedecl (DTD n eid ds) = if null ds then 
-                                  hd <> text ">"
+                                  hd PP.<> text ">"
                              else hd <+> text " [" $$
                                   vcat (map markupdecl ds) $$ text "]>"
                            where hd = text "<!DOCTYPE" <+> qname n <+>
@@ -77,17 +78,17 @@ markupdecl (MarkupMisc m)  = misc m
 --extsubsetdecl (ExtConditionalSect c) = conditionalsect c
 -- --extsubsetdecl (ExtPEReference p e)   = peref p
 
-element (Elem n as []) = text "<" <> qname n <+>
-                         fsep (map attribute as) <> text "/>"
+element (Elem n as []) = text "<" PP.<> qname n <+>
+                         fsep (map attribute as) PP.<> text "/>"
 element e@(Elem n as cs)
---  | any isText cs    = text "<" <> qname n <+> fsep (map attribute as) <>
---                       text ">" <> hcat (map content cs) <>
---                       text "</" <> qname n <> text ">"
-    | isText (head cs) = text "<" <> qname n <+> fsep (map attribute as) <>
-                         text ">" <> hcat (map content cs) <>
-                         text "</" <> qname n <> text ">"
+--  | any isText cs    = text "<" PP.<> qname n <+> fsep (map attribute as) PP.<>
+--                       text ">" PP.<> hcat (map content cs) PP.<>
+--                       text "</" PP.<> qname n PP.<> text ">"
+    | isText (head cs) = text "<" PP.<> qname n <+> fsep (map attribute as) PP.<>
+                         text ">" PP.<> hcat (map content cs) PP.<>
+                         text "</" PP.<> qname n PP.<> text ">"
     | otherwise        = let (d,c) = carryelem e empty
-                         in d <> c
+                         in d PP.<> c
 
 isText :: Content i -> Bool
 isText (CString _ _ _) = True
@@ -96,22 +97,22 @@ isText _               = False
 
 carryelem :: Element i -> Doc -> (Doc, Doc)
 carryelem (Elem n as []) c
-                       = ( c <>
-                           text "<" <> qname n <+> fsep (map attribute as)
+                       = ( c PP.<>
+                           text "<" PP.<> qname n <+> fsep (map attribute as)
                          , text "/>")
 --carryelem e@(Elem n as cs) c
-----  | any isText cs    =  ( c <> element e, empty)
+----  | any isText cs    =  ( c PP.<> element e, empty)
 --    | otherwise        =  let (cs',d') = carryscan carrycontent cs (text ">")
 --                          in
---                          ( c <>
---                            text "<" <> qname n <+> fsep (map attribute as) $$
---                            nest 2 (vcat cs') <> -- $$
---                            c' <> text "</" <> qname n
+--                          ( c PP.<>
+--                            text "<" PP.<> qname n <+> fsep (map attribute as) $$
+--                            nest 2 (vcat cs') PP.<> -- $$
+--                            c' PP.<> text "</" PP.<> qname n
 --                          , text ">")
 --carrycontent (CElem e) c   = carryelem e c
---carrycontent (CString _ s) c = (c <> chardata s, empty)
---carrycontent (CRef r) c    = (c <> reference r, empty)
---carrycontent (CMisc m) c   = (c <> misc m, empty)
+--carrycontent (CString _ s) c = (c PP.<> chardata s, empty)
+--carrycontent (CRef r) c    = (c PP.<> reference r, empty)
+--carrycontent (CMisc m) c   = (c PP.<> misc m, empty)
 --
 --carryscan :: (a->c->(b,c)) -> [a] -> c -> ([b],c)
 --carryscan f []     c = ([],c)
@@ -121,24 +122,24 @@ carryelem (Elem n as []) c
 
 carryelem (Elem n as cs) c
   | isText (head cs) =
-        ( start <>
-          text ">" <> hcat (map content cs) <> text "</" <> qname n
+        ( start PP.<>
+          text ">" PP.<> hcat (map content cs) PP.<> text "</" PP.<> qname n
         , text ">")
   | otherwise =
         let (d,c') = foldl carrycontent (start, text ">") cs in
-        ( d <> c' <> text "</" <> qname n
+        ( d PP.<> c' PP.<> text "</" PP.<> qname n
         , text ">")
-  where start = c <> text "<" <> qname n <+> fsep (map attribute as)
+  where start = c PP.<> text "<" PP.<> qname n <+> fsep (map attribute as)
 
 carrycontent :: (Doc, Doc) -> Content i -> (Doc, Doc)
 carrycontent (d,c) (CElem e _)     = let (d',c') = carryelem e c in
                                      (d $$ nest 2 d',       c')
-carrycontent (d,c) (CString _ s _) = (d <> c <> chardata s, empty)
-carrycontent (d,c) (CRef r _)      = (d <> c <> reference r,empty)
-carrycontent (d,c) (CMisc m _)     = (d $$ c <> misc m,     empty)
+carrycontent (d,c) (CString _ s _) = (d PP.<> c PP.<> chardata s, empty)
+carrycontent (d,c) (CRef r _)      = (d PP.<> c PP.<> reference r,empty)
+carrycontent (d,c) (CMisc m _)     = (d $$ c PP.<> misc m,     empty)
 
 
-attribute (n,v)          = qname n <> text "=" <> attvalue v
+attribute (n,v)          = qname n PP.<> text "=" PP.<> attvalue v
 content (CElem e _)      = element e
 content (CString _ s _)  = chardata s
 content (CRef r _)       = reference r
@@ -180,16 +181,16 @@ chardata	:: [Char] -> Doc
 
 
 elementdecl (ElementDecl n cs) = text "<!ELEMENT" <+> qname n <+>
-                                 contentspec cs <> text ">"
+                                 contentspec cs PP.<> text ">"
 contentspec EMPTY              = text "EMPTY"
 contentspec ANY                = text "ANY"
 contentspec (Mixed m)          = mixed m
 contentspec (ContentSpec c)    = cp c
 --contentspec (ContentPE p cs)   = peref p
-cp (TagName n m)       = qname n <> modifier m
-cp (Choice cs m)       = parens (hcat (intersperse (text "|") (map cp cs))) <>
+cp (TagName n m)       = qname n PP.<> modifier m
+cp (Choice cs m)       = parens (hcat (intersperse (text "|") (map cp cs))) PP.<>
                            modifier m
-cp (Seq cs m)          = parens (hcat (intersperse (text ",") (map cp cs))) <>
+cp (Seq cs m)          = parens (hcat (intersperse (text ",") (map cp cs))) PP.<>
                            modifier m
 --cp (CPPE p c)          = peref p
 modifier None          = empty
@@ -198,11 +199,11 @@ modifier Star          = text "*"
 modifier Plus          = text "+"
 mixed  PCDATA          = text "(#PCDATA)"
 mixed (PCDATAplus ns)  = text "(#PCDATA |" <+>
-                         hcat (intersperse (text "|") (map qname ns)) <>
+                         hcat (intersperse (text "|") (map qname ns)) PP.<>
                          text ")*"
 
 attlistdecl (AttListDecl n ds) = text "<!ATTLIST" <+> qname n <+>
-                                 fsep (map attdef ds) <> text ">"
+                                 fsep (map attdef ds) PP.<> text ">"
 attdef (AttDef n t d)          = qname n <+> atttype t <+> defaultdecl d
 atttype  StringType            = text "CDATA"
 atttype (TokenizedType t)      = tokenizedtype t
@@ -234,13 +235,13 @@ defaultdecl (DefaultTo a f)    = maybe (const (text "#FIXED")) f <+> attvalue a
 --                                                   text "]]>" <+> ignore i
 reference (RefEntity er)       = entityref er
 reference (RefChar cr)         = charref cr
-entityref n                    = text "&" <> text n <> text ";"
-charref c                      = text "&#" <> text (show c) <> text ";"
+entityref n                    = text "&" PP.<> text n PP.<> text ";"
+charref c                      = text "&#" PP.<> text (show c) PP.<> text ";"
 entitydecl (EntityGEDecl d)    = gedecl d
 entitydecl (EntityPEDecl d)    = pedecl d
-gedecl (GEDecl n ed)           = text "<!ENTITY" <+> text n <+> entitydef ed <>
+gedecl (GEDecl n ed)           = text "<!ENTITY" <+> text n <+> entitydef ed PP.<>
                                  text ">"
-pedecl (PEDecl n pd)           = text "<!ENTITY %" <> text n <+> pedef pd <>
+pedecl (PEDecl n pd)           = text "<!ENTITY %" PP.<> text n <+> pedef pd PP.<>
                                  text ">"
 entitydef (DefEntityValue ev)  = entityvalue ev
 entitydef (DefExternalID i nd) = externalid i <+> maybe ndatadecl nd
@@ -251,27 +252,27 @@ externalid (PUBLIC i sl)       = text "PUBLIC" <+> pubidliteral i <+>
                                  systemliteral sl
 ndatadecl (NDATA n)            = text "NDATA" <+> text n
 --textdecl (TextDecl vi ed)      = text "<?xml" <+> maybe text vi <+>
---                                 encodingdecl ed <> text "?>"
+--                                 encodingdecl ed PP.<> text "?>"
 --extparsedent (ExtParsedEnt t c)= maybe textdecl t <+> content c
 --extpe (ExtPE t esd)            = maybe textdecl t <+>
 --                                 vcat (map extsubsetdecl esd)
 notationdecl (NOTATION n e)    = text "<!NOTATION" <+> text n <+>
-                                 either externalid publicid e <>
+                                 either externalid publicid e PP.<>
                                  text ">"
 publicid (PUBLICID p)          = text "PUBLICID" <+> pubidliteral p
-encodingdecl (EncodingDecl s)  = text "encoding='" <> text s <> text "'"
+encodingdecl (EncodingDecl s)  = text "encoding='" PP.<> text s PP.<> text "'"
 nmtoken s                      = text s
-attvalue (AttValue esr)        = text "\"" <>
-                                 hcat (map (either text reference) esr) <>
+attvalue (AttValue esr)        = text "\"" PP.<>
+                                 hcat (map (either text reference) esr) PP.<>
                                  text "\""
-entityvalue (EntityValue evs)  = text "'" <> hcat (map ev evs) <> text "'"
+entityvalue (EntityValue evs)  = text "'" PP.<> hcat (map ev evs) PP.<> text "'"
 ev (EVString s)                = text s
 --ev (EVPERef p e)               = peref p
 ev (EVRef r)                   = reference r
-pubidliteral (PubidLiteral s)  = text "'" <> text s <> text "'"
-systemliteral (SystemLiteral s)= text "'" <> text s <> text "'"
+pubidliteral (PubidLiteral s)  = text "'" PP.<> text s PP.<> text "'"
+systemliteral (SystemLiteral s)= text "'" PP.<> text s PP.<> text "'"
 chardata s                     = if all isSpace s then empty else text s
---cdsect c                       = text "<![CDATA[" <> chardata c <> text "]]>"
+--cdsect c                       = text "<![CDATA[" PP.<> chardata c PP.<> text "]]>"
 
 qname n                        = text (printableName n)
 

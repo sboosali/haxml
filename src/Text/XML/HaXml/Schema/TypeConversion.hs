@@ -538,16 +538,18 @@ consolidate (Occurs min max) (UnorderedMinLength,_,n) =
 consolidate (Occurs min max) (UnorderedMaxLength,_,n) =
              Occurs min (Just (read n))
 
-instance Monoid Occurs where
-    mempty = Occurs Nothing Nothing
-    (Occurs Nothing  Nothing)  `mappend` o  = o
-    (Occurs (Just z) Nothing)  `mappend` (Occurs min max)
+instance Semigroup Occurs where
+    (Occurs Nothing  Nothing)  <> o  = o
+    (Occurs (Just z) Nothing)  <> (Occurs min max)
                                         = Occurs (Just $ maybe z (*z) min) max
-    (Occurs Nothing  (Just x)) `mappend` (Occurs min max)
+    (Occurs Nothing  (Just x)) <> (Occurs min max)
                                         = Occurs min (Just $ maybe x (*x) max)
-    (Occurs (Just z) (Just x)) `mappend` (Occurs min max)
+    (Occurs (Just z) (Just x)) <> (Occurs min max)
                                         = Occurs (Just $ maybe z (*z) min)
                                                  (Just $ maybe x (*x) max)
+
+instance Monoid Occurs where
+    mempty = Occurs Nothing Nothing
 
 -- | Push another Occurs value inside an existing Modifier.
 combineOccursModifier :: Occurs -> Modifier -> Modifier

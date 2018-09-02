@@ -5,7 +5,8 @@ module Text.XML.HaXml.DtdToHaskell.Instance
 import Data.List (intersperse)
 
 import Text.XML.HaXml.DtdToHaskell.TypeDef
-import Text.PrettyPrint.HughesPJ
+import           Text.PrettyPrint.HughesPJ hiding ((<>))
+import qualified Text.PrettyPrint.HughesPJ as PP
 
 -- | Convert typedef to appropriate instance declaration, either @XmlContent@,
 --   @XmlAttributes@, or @XmlAttrType@.
@@ -23,15 +24,15 @@ mkInstance (DataDef _ n fs []) =
     text "instance XmlContent" <+> ppHName n <+> text "where" $$
     nest 4 (
              text "toContents" <+> topatval <+> text "=" $$
-             nest 4 (text "[CElem (Elem (N \"" <> ppXName n <> text "\")"
+             nest 4 (text "[CElem (Elem (N \"" PP.<> ppXName n PP.<> text "\")"
                           <+> toattr <+> text "[]) ()]")
            $$
              text "parseContents = do" $$
              nest 4 (text "{ (Elem _ as []) <- element [\""
-                             <> ppXName n <> text "\"]" $$
+                             PP.<> ppXName n PP.<> text "\"]" $$
                      text "; return" <+> frretval $$
-                     text "} `adjustErr` (\"in <" <> ppXName n
-                                                  <> text ">, \"++)"
+                     text "} `adjustErr` (\"in <" PP.<> ppXName n
+                                                  PP.<> text ">, \"++)"
                     )
            )
     $$
@@ -43,22 +44,22 @@ mkInstance (DataDef False n fs [(n0,sts)]) =
         (frpat, frattr, topat, toattr) = attrpats fs
     in
     text "instance HTypeable" <+> ppHName n <+> text "where" $$
-    nest 4 ( text "toHType x = Defined \"" <> ppXName n <> text "\" [] []" )
+    nest 4 ( text "toHType x = Defined \"" PP.<> ppXName n PP.<> text "\" [] []" )
     $$
     text "instance XmlContent" <+> ppHName n <+> text "where" $$
     nest 4 (
              text "toContents" <+> parens (mkCpat n0 topat vs) <+> text "=" $$
-             nest 4 (text "[CElem (Elem (N \"" <> ppXName n <> text "\")"
+             nest 4 (text "[CElem (Elem (N \"" PP.<> ppXName n PP.<> text "\")"
                           <+> toattr <+> parens (mkToElem sts vs)
-                          <> text ") ()]")
+                          PP.<> text ") ()]")
            $$
              text "parseContents = do" $$
              nest 4 (text "{ e@(Elem _"<+> frpat <+> text "_) <- element [\""
-                             <> ppXName n <> text "\"]"
+                             PP.<> ppXName n PP.<> text "\"]"
                      $$ text "; interior e $"
                            <+> (mkParseConstr frattr (n0,sts))
-                     $$ text "} `adjustErr` (\"in <" <> ppXName n
-                                                     <> text ">, \"++)")
+                     $$ text "} `adjustErr` (\"in <" PP.<> ppXName n
+                                                     PP.<> text ">, \"++)")
            )
     $$
     mkInstanceAttrs Extended n fs
@@ -69,7 +70,7 @@ mkInstance (DataDef True n [] [(n0,sts)]) =
     let vs = nameSupply sts
     in
     text "instance HTypeable" <+> ppHName n <+> text "where" $$
-    nest 4 ( text "toHType x = Defined \"" <> ppXName n <> text "\" [] []" )
+    nest 4 ( text "toHType x = Defined \"" PP.<> ppXName n PP.<> text "\" [] []" )
     $$
     text "instance XmlContent" <+> ppHName n <+> text "where" $$
     nest 4 ( text "toContents" <+> parens (mkCpat n0 empty vs)
@@ -86,19 +87,19 @@ mkInstance (DataDef False n fs cs) =
         _ = if null fs then False else True
     in
     text "instance HTypeable" <+> ppHName n <+> text "where" $$
-    nest 4 ( text "toHType x = Defined \"" <> ppXName n <> text "\" [] []" )
+    nest 4 ( text "toHType x = Defined \"" PP.<> ppXName n PP.<> text "\" [] []" )
     $$
     text "instance XmlContent" <+> ppHName n <+> text "where" $$
     nest 4 ( vcat (map (mkToMult n topat toattr) cs)
            $$ text "parseContents = do "
            $$ nest 4 (text "{ e@(Elem _"<+> frpat <+> text "_) <- element [\""
-                                                  <> ppXName n <> text "\"]"
+                                                  PP.<> ppXName n PP.<> text "\"]"
                      $$ text "; interior e $ oneOf"
                      $$ nest 4 ( text "[" <+> mkParseConstr frattr (head cs)
                                $$ vcat (map (\c-> text "," <+> mkParseConstr frattr c)
                                             (tail cs))
-                               $$ text "] `adjustErr` (\"in <" <> ppXName n
-                                                             <> text ">, \"++)"
+                               $$ text "] `adjustErr` (\"in <" PP.<> ppXName n
+                                                             PP.<> text ">, \"++)"
                                )
                      $$ text "}"
                      )
@@ -113,7 +114,7 @@ mkInstance (DataDef True n fs cs) =
         mixattrs = if null fs then False else True
     in
     text "instance HTypeable" <+> ppHName n <+> text "where" $$
-    nest 4 ( text "toHType x = Defined \"" <> ppXName n <> text "\" [] []" )
+    nest 4 ( text "toHType x = Defined \"" PP.<> ppXName n PP.<> text "\" [] []" )
     $$
     text "instance XmlContent" <+> ppHName n <+> text "where" $$
     nest 4 ( vcat (map (mkToAux mixattrs) cs)
@@ -121,8 +122,8 @@ mkInstance (DataDef True n fs cs) =
            $$ nest 4 ( text "[" <+> mkParseConstr frattr (head cs)
                      $$ vcat (map (\c-> text "," <+> mkParseConstr frattr c)
                                   (tail cs))
-                     $$ text "] `adjustErr` (\"in <" <> ppXName n
-                                                     <> text ">, \"++)"
+                     $$ text "] `adjustErr` (\"in <" PP.<> ppXName n
+                                                     PP.<> text ">, \"++)"
                      )
            )
     $$
@@ -177,7 +178,7 @@ attrpats fs =
 --     cvs = let ns = nameSupply2 vs
 --           in zip ns (text "c0": init ns)
 --     frElem _ (st,v,(cvi,cvo)) inner =
---         parens (text "\\" <> parens (v<>comma<>cvi) <> text "->" $$
+--         parens (text "\\" PP.<> parens (v PP.<>comma PP.<> cvi) <> text "->" $$
 --                 nest 2 inner) $$
 --         parens (
 --           case st of
@@ -186,26 +187,26 @@ attrpats fs =
 --             (List String)   -> text "many fromText" <+> cvo
 --             (List _)        -> text "many fromElem" <+> cvo
 --             (List1 s)       -> text "definite fromElem"
---                                <+> text "\"" <> text (show s)<> text "+\""
---                                <+> text "\"" <> ppXName n <> text "\""
+--                                <+> text "\"" PP.<> text (show s)PP.<> text "+\""
+--                                <+> text "\"" PP.<> ppXName n PP.<> text "\""
 --                                <+> cvo
 --             (Tuple ss)  -> text "definite fromElem"
---                            <+> text "\"(" <> hcat (intersperse (text ",")
+--                            <+> text "\"(" PP.<> hcat (intersperse (text ",")
 --                                                            (map (text.show) ss))
---                                           <> text ")\""
---                            <+> text "\"" <> ppXName n <> text "\""
+--                                           PP.<> text ")\""
+--                            <+> text "\"" PP.<> ppXName n PP.<> text "\""
 --                            <+> cvo
 --             (OneOf _)  -> text "definite fromElem"
 --                            <+> text "\"OneOf\""
---                            <+> text "\"" <> ppXName n <> text "\""
+--                            <+> text "\"" PP.<> ppXName n PP.<> text "\""
 --                            <+> cvo
---             (String)    -> text "definite fromText" <+> text "\"text\" \"" <>
---                                                  ppXName n <> text "\"" <+> cvo
---             (Any)       -> text "definite fromElem" <+> text "\"ANY\" \"" <>
---                                                  ppXName n <> text "\"" <+> cvo
+--             (String)    -> text "definite fromText" <+> text "\"text\" \"" PP.<>
+--                                                  ppXName n PP.<> text "\"" <+> cvo
+--             (Any)       -> text "definite fromElem" <+> text "\"ANY\" \"" PP.<>
+--                                                  ppXName n PP.<> text "\"" <+> cvo
 --             (Defined m) -> text "definite fromElem" <+>
---                                  text "\"<" <> ppXName m <> text ">\" \"" <>
---                                                  ppXName m <> text "\"" <+> cvo
+--                                  text "\"<" PP.<> ppXName m PP.<> text ">\" \"" PP.<>
+--                                                  ppXName m PP.<> text "\"" <+> cvo
 --             (Defaultable _ _)  -> text "nyi_fromElem_Defaultable" <+> cvo
 --           )
 
@@ -218,7 +219,7 @@ mkParseContents n sts vs inner =
     cvs = let ns = nameSupply2 vs
           in zip ns (text "c0": init ns)
     frElem n (st,v,(cvi,cvo)) inner =
-        parens (text "\\" <> parens (v<>comma<>cvi) <> text "->" $$
+        parens (text "\\" PP.<> parens (v PP.<>comma PP.<>cvi) PP.<> text "->" $$
                 nest 2 inner) $$
         parens (
           )
@@ -284,12 +285,12 @@ mkTranslate es =
     vcat (map trans es) $$
     text "translate _ = Nothing"
   where
-    trans n = text "translate \"" <> ppXName n <> text "\" =" <+>
+    trans n = text "translate \"" PP.<> ppXName n PP.<> text "\" =" <+>
               text "Just" <+> ppHName n
 
 mkToAttr :: Name -> Doc
 mkToAttr n = text "toAttrFrTyp n" <+> ppHName n <+> text "=" <+>
-             text "Just (N n, str2attr" <+> doubleQuotes (ppXName n) <> text ")"
+             text "Just (N n, str2attr" <+> doubleQuotes (ppXName n) PP.<> text ")"
 
 mkFrFld :: Name -> (Name,StructType) -> Doc
 mkFrFld tag (n,st) =
@@ -326,7 +327,7 @@ mkToFld (n,st) =
 --         let vs  = nameSupply sts in
 --         nest 4 (text "case" <+> blah sts vs <+> text "of" $$
 --                 succpat sts vs <+> text "-> (Just" <+>
---                                    parens (mkCpat n attrs vs) <> text ", rest)"
+--                                    parens (mkCpat n attrs vs) PP.<> text ", rest)"
 --                 $$
 --                 failpat sts <+> text "->" $$ nest 4 innr
 --                )
@@ -336,7 +337,7 @@ mkToFld (n,st) =
 --         let ns = nameSupply2 vs
 --             cvs = zip ns (text "c0": init ns)
 --             blahblah (st,v,(cvi,cvo)) innr =
---                 parens (text "\\" <> parens (v<>comma<>cvi) <> text "->" $$
+--                 parens (text "\\" PP.<> parens (v PP.<>comma PP.<>cvi) PP.<> text "->" $$
 --                         nest 2 innr) $$
 --                 blahblahblah st cvo
 --         in
@@ -392,6 +393,6 @@ mkToMult tag attrpat attrexp (n,sts) =
     let vs = nameSupply sts
     in
     text "toContents" <+> parens (mkCpat n attrpat vs) <+> text "="
-    $$ nest 4 (text "[CElem (Elem (N \"" <> ppXName tag <> text "\")"<+> attrexp
+    $$ nest 4 (text "[CElem (Elem (N \"" PP.<> ppXName tag PP.<> text "\")"<+> attrexp
               <+> parens (mkToElem sts vs) <+> text ") ()]")
 

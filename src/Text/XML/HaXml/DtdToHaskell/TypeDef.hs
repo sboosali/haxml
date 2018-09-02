@@ -20,7 +20,8 @@ module Text.XML.HaXml.DtdToHaskell.TypeDef
 
 import Data.Char (isLower, isUpper, toLower, toUpper, isDigit)
 import Data.List (intersperse)
-import Text.PrettyPrint.HughesPJ
+import Text.PrettyPrint.HughesPJ hiding ((<>))
+import qualified Text.PrettyPrint.HughesPJ as PP
 
 
 ---- Internal representation for typedefs ----
@@ -76,11 +77,11 @@ ppTypeDef :: TypeDef -> Doc
 --      no attrs, no constructors
 ppTypeDef (DataDef _ n [] []) =
     let nme = ppHName n in
-    text "data" <+> nme <+> text "=" <+> nme <+> text "\t\t" <> derives
+    text "data" <+> nme <+> text "=" <+> nme <+> text "\t\t" PP.<> derives
 
 --      no attrs, single constructor
 ppTypeDef (DataDef _ n [] [c@(_,[_])]) =
-    text "newtype" <+> ppHName n <+> text "=" <+> ppC c <+> text "\t\t" <> derives
+    text "newtype" <+> ppHName n <+> text "=" <+> ppC c <+> text "\t\t" PP.<> derives
 
 --      no attrs, multiple constrs
 ppTypeDef (DataDef _ n [] cs) =
@@ -123,7 +124,7 @@ ppST (Maybe st)  = parens (text "Maybe" <+> ppST st)
 ppST (List st)   = text "[" <> ppST st <> text "]"
 ppST (List1 st)  = parens (text "List1" <+> ppST st)
 ppST (Tuple sts) = parens (commaList (map ppST sts))
-ppST (OneOf sts) = parens (text "OneOf" <> text (show (length sts)) <+>
+ppST (OneOf sts) = parens (text "OneOf" PP.<> text (show (length sts)) <+>
                            hsep (map ppST sts))
 ppST  StringMixed= text "String"
 ppST  String     = text "String"

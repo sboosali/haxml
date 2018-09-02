@@ -23,7 +23,7 @@ import Data.Char (toLower)
 -- | Vertically pretty-print a list of things, with open and close brackets,
 --   and separators.
 ppvList :: String -> String -> String -> (a->Doc) -> [a] -> Doc
-ppvList open sep close pp []     = text open <> text close
+ppvList open sep close pp []     = text open PP.<> text close
 ppvList open sep close pp (x:xs) = text open <+> pp x
                                    $$ vcat (map (\y-> text sep <+> pp y) xs)
                                    $$ text close
@@ -77,7 +77,7 @@ ppHName (HName x) = text x
 -- | Pretty-print an XML-style name.
 ppXName :: XName -> Doc
 ppXName (XName (N x))     = text x
-ppXName (XName (QN ns x)) = text (nsPrefix ns) <> text ":" <> text x
+ppXName (XName (QN ns x)) = text (nsPrefix ns) PP.<> text ":" PP.<> text x
 
 -- | Some different ways of using a Haskell identifier.
 ppModId, ppConId, ppVarId, ppUnqConId, ppUnqVarId, ppFwdConId
@@ -90,7 +90,7 @@ ppUnqVarId nx = ppHName . unqvarid nx
 ppFwdConId nx = ppHName . fwdconid nx
 
 ppJoinConId, ppFieldId :: NameConverter -> XName -> XName -> Doc
-ppJoinConId nx p q = ppHName (conid nx p) <> text "_" <> ppHName (conid nx q)
+ppJoinConId nx p q = ppHName (conid nx p) PP.<> text "_" PP.<> ppHName (conid nx q)
 ppFieldId   nx     = \t-> ppHName . fieldid nx t
 
 -- | Convert a whole document from HaskellTypeModel to Haskell source text.
@@ -136,36 +136,36 @@ ppModule nx m =
     ppFwdElem (_,   Nothing)  = empty
     ppFwdElem (name,Just mod) = text "import {-# SOURCE #-}" <+> ppModId nx mod
                                 <+> text "("
-                                    <+> (text "element" <> ppUnqConId nx name)
-                                    <> (text ", elementToXML" <> ppUnqConId nx name)
+                                    <+> (text "element" PP.<> ppUnqConId nx name)
+                                    PP.<> (text ", elementToXML" PP.<> ppUnqConId nx name)
                                 <+> text ")"
 
 
 -- | Generate a fragmentary parser for an attribute.
 ppAttr :: Attribute -> Int -> Doc
-ppAttr a n = (text "a"<>text (show n)) <+> text "<-"
+ppAttr a n = (text "a"PP.<>text (show n)) <+> text "<-"
                                        <+> (if attr_required a then empty
                                                  else text "optional $")
                                        <+> text "getAttribute \""
-                                       <> ppXName (attr_name a)
-                                       <> text "\" e pos"
+                                       PP.<> ppXName (attr_name a)
+                                       PP.<> text "\" e pos"
 
 -- | Generate a fragmentary toXML for an attribute.
 toXmlAttr :: Attribute -> Doc
 toXmlAttr a = (if attr_required a then id
                                   else (\d-> text "maybe []" <+> parens d))
-              (text "toXMLAttribute \"" <> ppXName (attr_name a) <> text "\"")
+              (text "toXMLAttribute \"" PP.<> ppXName (attr_name a) PP.<> text "\"")
 
 -- | Generate a fragmentary parser for an element.
 ppElem :: NameConverter -> Element -> Doc
 ppElem nx e@Element{}
     | elem_byRef e    = ppElemModifier (elem_modifier e)
                                        (text "element"
-                                        <> ppUnqConId nx (elem_name e))
+                                        PP.<> ppUnqConId nx (elem_name e))
     | otherwise       = ppElemModifier (elem_modifier e)
                                        (text "parseSchemaType \""
-                                        <> ppXName (elem_name e)
-                                        <> text "\"")
+                                        PP.<> ppXName (elem_name e)
+                                        PP.<> text "\"")
 ppElem nx e@AnyElem{} = ppElemModifier (elem_modifier e)
                           (text "parseAnyElement")
 ppElem nx e@Text{}    = text "parseText"
@@ -175,12 +175,12 @@ ppElem nx e@OneOf{}   = ppElemModifier (liftedElemModifier e)
                                                     (zip (elem_oneOf e) [1..n]))
   where
     n = length (elem_oneOf e)
-    ppOneOf n (e,i) = text "(\"" <> hsep (map (ppElemTypeName nx id)
+    ppOneOf n (e,i) = text "(\"" PP.<> hsep (map (ppElemTypeName nx id)
                                          . cleanChoices $ e)
-                      <> text "\","
+                      PP.<> text "\","
                       <+> text "fmap" <+> text (ordinal i ++"Of"++show n)
                           <+> parens (ppSeqElem . cleanChoices $ e)
-                      <> text ")"
+                      PP.<> text ")"
     ordinal i | i <= 20   = ordinals!!i
               | otherwise = "Choice" ++ show i
     ordinals = ["Zero","One","Two","Three","Four","Five","Six","Seven","Eight"
@@ -197,24 +197,24 @@ toXmlElem :: NameConverter -> Element -> Doc
 toXmlElem nx e@Element{}
     | elem_byRef e    = xmlElemModifier (elem_modifier e)
                                         (text "elementToXML"
-                                        <> ppUnqConId nx (elem_name e))
+                                        PP.<> ppUnqConId nx (elem_name e))
     | otherwise       = xmlElemModifier (elem_modifier e)
                                         (text "schemaTypeToXML \""
-                                        <> ppXName (elem_name e)
-                                        <> text "\"")
+                                        PP.<> ppXName (elem_name e)
+                                        PP.<> text "\"")
 toXmlElem nx e@AnyElem{} = xmlElemModifier (elem_modifier e)
                                            (text "toXMLAnyElement")
 toXmlElem nx e@Text{}    = text "toXMLText"
 toXmlElem nx e@OneOf{}   = xmlElemModifier (liftedElemModifier e)
-                           (text "foldOneOf" <> text (show n)
+                           (text "foldOneOf" PP.<> text (show n)
                            <+> ppvList "" "" "" xmlOneOf (elem_oneOf e))
   where
     n = length (elem_oneOf e)
     xmlOneOf e = parens (xmlSeqElem . cleanChoices $ e)
     xmlSeqElem []  = PP.empty
     xmlSeqElem [e] = toXmlElem nx e
-    xmlSeqElem es  = text "\\ (" <> hcat (intersperse (text ",") vars)
-                     <> text ") -> concat"
+    xmlSeqElem es  = text "\\ (" PP.<> hcat (intersperse (text ",") vars)
+                     PP.<> text ") -> concat"
                      <+> ppvList "[" "," "]" (\(e,v)-> toXmlElem nx e <+> v)
                                              (zip es vars)
         where vars = map (text.(:[])) . take (length es) $ ['a'..'z']
@@ -239,13 +239,13 @@ ppHighLevelDecl nx (RestrictSimpleType t s r comm) =
                       <+> text "deriving (Eq,Show)"
     $$ text "instance Restricts" <+> ppUnqConId nx t <+> ppConId nx s
                       <+> text "where"
-        $$ nest 4 (text "restricts (" <> ppUnqConId nx t <+> text "x) = x")
+        $$ nest 4 (text "restricts (" PP.<> ppUnqConId nx t <+> text "x) = x")
     $$ text "instance SchemaType" <+> ppUnqConId nx t <+> text "where"
         $$ nest 4 (text "parseSchemaType s = do" 
                   $$ nest 4 (text "e <- element [s]"
                            $$ text "commit $ interior e $ parseSimpleType")
                   )
-        $$ nest 4 (text "schemaTypeToXML s ("<> ppUnqConId nx t <+> text "x) = " 
+        $$ nest 4 (text "schemaTypeToXML s ("PP.<> ppUnqConId nx t <+> text "x) = " 
                   $$ nest 4 (text "toXMLElement s [] [toXMLText (simpleTypeText x)]")
                   )
     $$ text "instance SimpleType" <+> ppUnqConId nx t <+> text "where"
@@ -255,17 +255,17 @@ ppHighLevelDecl nx (RestrictSimpleType t s r comm) =
                    $$ text "-- XXX should enforce the restrictions somehow?"
                    $$ text "-- The restrictions are:"
                    $$ vcat (map ((text "--     " <+>) . ppRestrict) r))
-        $$ nest 4 (text "simpleTypeText (" <> ppUnqConId nx t
+        $$ nest 4 (text "simpleTypeText (" PP.<> ppUnqConId nx t
                                           <+> text "x) = simpleTypeText x")
   where
     ppRestrict (RangeR occ comm)     = text "(RangeR"
-                                         <+> ppOccurs occ <>  text ")"
+                                         <+> ppOccurs occ PP.<>  text ")"
     ppRestrict (Pattern regexp comm) = text ("(Pattern "++regexp++")")
     ppRestrict (Enumeration items)   = text "(Enumeration"
                                          <+> hsep (map (text . fst) items)
-                                         <>  text ")"
+                                         PP.<>  text ")"
     ppRestrict (StrLength occ comm)  = text "(StrLength"
-                                         <+> ppOccurs occ <>  text ")"
+                                         <+> ppOccurs occ PP.<>  text ")"
     ppOccurs = parens . text . show
 
 ppHighLevelDecl nx (ExtendSimpleType t s as comm) =
@@ -290,7 +290,7 @@ ppHighLevelDecl nx (ExtendSimpleType t s as comm) =
                                                      <+> attrsValue as)
                             )
                   )
-        $$ nest 4 (text "schemaTypeToXML s ("<> ppUnqConId nx t
+        $$ nest 4 (text "schemaTypeToXML s ("PP.<> ppUnqConId nx t
                                              <+> text "bt at) ="
                   $$ nest 4 (text "addXMLAttributes"
                              <+> ppvList "[" "," "]"
@@ -302,7 +302,7 @@ ppHighLevelDecl nx (ExtendSimpleType t s as comm) =
                   )
     $$ text "instance Extension" <+> ppUnqConId nx t <+> ppConId nx s
                                  <+> text "where"
-        $$ nest 4 (text "supertype (" <> ppUnqConId nx t <> text " s _) = s")
+        $$ nest 4 (text "supertype (" PP.<> ppUnqConId nx t PP.<> text " s _) = s")
   where
     t_attrs = let (XName (N t_base)) = t in XName (N (t_base++"Attributes"))
 
@@ -341,13 +341,13 @@ ppHighLevelDecl nx (EnumSimpleType t is comm) =
                         <+> ppvList "" "`onFail`" "" parseItem is
                    $$ vcat (map enumText is))
   where
-    item (i,c) = (ppUnqConId nx t <> text "_" <> ppConId nx i)
+    item (i,c) = (ppUnqConId nx t PP.<> text "_" PP.<> ppConId nx i)
                  $$ ppComment After c
-    parseItem (i,_) = text "do literal \"" <> ppXName i <> text "\"; return"
-                           <+> (ppUnqConId nx t <> text "_" <> ppConId nx i)
+    parseItem (i,_) = text "do literal \"" PP.<> ppXName i PP.<> text "\"; return"
+                           <+> (ppUnqConId nx t PP.<> text "_" PP.<> ppConId nx i)
     enumText  (i,_) = text "simpleTypeText"
-                           <+> (ppUnqConId nx t <> text "_" <> ppConId nx i)
-                           <+> text "= \"" <> ppXName i <> text "\""
+                           <+> (ppUnqConId nx t PP.<> text "_" PP.<> ppConId nx i)
+                           <+> text "= \"" PP.<> ppXName i PP.<> text "\""
 
 ppHighLevelDecl nx (ElementsAttrs t es as comm) =
     ppComment Before comm
@@ -366,7 +366,7 @@ ppHighLevelDecl nx (ElementsAttrs t es as comm) =
                                   )
                             )
                   )
-        $$ nest 4 (text "schemaTypeToXML s x@"<> ppUnqConId nx t <> text "{} ="
+        $$ nest 4 (text "schemaTypeToXML s x@"PP.<> ppUnqConId nx t PP.<> text "{} ="
                   $$ nest 4 (text "toXMLElement s"
                              <+> ppvList "[" "," "]"
                                          (\a-> toXmlAttr a <+> text "$"
@@ -397,7 +397,7 @@ ppHighLevelDecl nx (ElementsAttrsAbstract t [] comm) =
         $$ nest 4 (text "schemaTypeToXML s _ = toXMLElement s [] []")
   where
     errmsg = text "\"Parse failed when expecting an extension type of"
-             <+> ppXName t <> text ":\\n  No extension types are known.\""
+             <+> ppXName t PP.<> text ":\\n  No extension types are known.\""
 ppHighLevelDecl nx (ElementsAttrsAbstract t insts comm) =
     ppComment Before comm
     $$ text "data" <+> ppUnqConId nx t
@@ -422,91 +422,91 @@ ppHighLevelDecl nx (ElementsAttrsAbstract t insts comm) =
 --                                fwd name <+> text "q," <+>
 --                                text "SchemaType q) =>" <+>
 --                                con name <+>
---                                text "("<>fwd name<>text"->q)" <+> fwd name
+--                                text "("PP.<>fwd namePP.<>text"->q)" <+> fwd name
     ppParse (name,Nothing) = text "(fmap" <+> con name <+>
                              text "$ parseSchemaType s)"
     ppParse (name,Just _)  = ppParse (name,Nothing)
 --  ppParse (name,Just _)  = text "(return" <+> con name <+>
 --                           text "`apply` (fmap const $ parseSchemaType s)" <+>
---                           text "`apply` return" <+> fwd name <> text ")"
+--                           text "`apply` return" <+> fwd name PP.<> text ")"
 --  ppFwdDecl (name,Just mod)
 --         = text "-- | Proxy:" <+> ppConId nx name
 --               <+> text "declared later in" <+> ppModId nx mod
 --           $$ text "data" <+> fwd name <+> text "=" <+> fwd name
     errmsg = text "\"Parse failed when expecting an extension type of"
-             <+> ppXName t <> text ",\\n\\\n\\  namely one of:\\n\\\n\\"
-             <> hcat (intersperse (text ",")
+             <+> ppXName t PP.<> text ",\\n\\\n\\  namely one of:\\n\\\n\\"
+             PP.<> hcat (intersperse (text ",")
                                   (map (ppXName . fst) insts))
-             <> text "\""
+             PP.<> text "\""
 --  fwd name = ppFwdConId nx name
     con name = ppJoinConId nx t name
     -- This is probably an unportable hack, but because an abstract type never
     -- has an element in its own name, we need to guess at the name of the
     -- possible subtype elements that could substitute for it.
     toXML (name,_) = text "schemaTypeToXML _s ("
-                     <> con name <+> text "x) = schemaTypeToXML \""
-                     <> ppXName (initLower name) <> text "\" x"
+                     PP.<> con name <+> text "x) = schemaTypeToXML \""
+                     PP.<> ppXName (initLower name) PP.<> text "\" x"
     initLower (XName (N (c:cs))) = XName $ N (toLower c:cs)
     initLower (XName (QN ns (c:cs))) = XName $ QN ns (toLower c:cs)
 
 ppHighLevelDecl nx (ElementOfType e@Element{}) =
     ppComment Before (elem_comment e)
-    $$ (text "element" <> ppUnqConId nx (elem_name e)) <+> text "::"
+    $$ (text "element" PP.<> ppUnqConId nx (elem_name e)) <+> text "::"
         <+> text "XMLParser" <+> ppConId nx (elem_type e)
-    $$ (text "element" <> ppUnqConId nx (elem_name e)) <+> text "="
-        <+> (text "parseSchemaType \"" <> ppXName (elem_name e)  <> text "\"")
-    $$ (text "elementToXML" <> ppUnqConId nx (elem_name e)) <+> text "::"
+    $$ (text "element" PP.<> ppUnqConId nx (elem_name e)) <+> text "="
+        <+> (text "parseSchemaType \"" PP.<> ppXName (elem_name e)  PP.<> text "\"")
+    $$ (text "elementToXML" PP.<> ppUnqConId nx (elem_name e)) <+> text "::"
         <+> ppConId nx (elem_type e) <+> text "-> [Content ()]"
-    $$ (text "elementToXML" <> ppUnqConId nx (elem_name e)) <+> text "="
-        <+> (text "schemaTypeToXML \"" <> ppXName (elem_name e)  <> text "\"")
+    $$ (text "elementToXML" PP.<> ppUnqConId nx (elem_name e)) <+> text "="
+        <+> (text "schemaTypeToXML \"" PP.<> ppXName (elem_name e)  PP.<> text "\"")
 
 ppHighLevelDecl nx e@(ElementAbstractOfType n t [] comm) =
     ppComment Before comm
     $$ text "--  (There are no elements in any substitution group for this element.)"
-    $$ (text "element" <> ppUnqConId nx n) <+> text "::"
+    $$ (text "element" PP.<> ppUnqConId nx n) <+> text "::"
         <+> text "XMLParser" <+> ppConId nx t
-    $$ (text "element" <> ppUnqConId nx n) <+> text "="
+    $$ (text "element" PP.<> ppUnqConId nx n) <+> text "="
         <+> text "fail" <+> errmsg
-    $$ (text "elementToXML" <> ppUnqConId nx n) <+> text "::"
+    $$ (text "elementToXML" PP.<> ppUnqConId nx n) <+> text "::"
         <+> ppConId nx t <+> text "-> [Content ()]"
-    $$ (text "elementToXML" <> ppUnqConId nx n) <+> text "="
-        <+> (text "schemaTypeToXML \"" <> ppXName n <> text "\"")
+    $$ (text "elementToXML" PP.<> ppUnqConId nx n) <+> text "="
+        <+> (text "schemaTypeToXML \"" PP.<> ppXName n PP.<> text "\"")
   where
     errmsg = text "\"Parse failed when expecting an element in the substitution group for\\n\\\n\\    <"
-             <> ppXName n <> text ">,\\n\\\n\\  There are no substitutable elements.\""
+             PP.<> ppXName n PP.<> text ">,\\n\\\n\\  There are no substitutable elements.\""
 ppHighLevelDecl nx e@(ElementAbstractOfType n t substgrp comm)
 --  | any notInScope substgrp
---              = (text "-- element" <> ppUnqConId nx n) <+> text "::"
+--              = (text "-- element" PP.<> ppUnqConId nx n) <+> text "::"
 --                    <+> text "XMLParser" <+> ppConId nx t
 --              $$ text "--     declared in Instances module"
     | otherwise = ppComment Before comm
-                $$ (text "element" <> ppUnqConId nx n) <+> text "::"
+                $$ (text "element" PP.<> ppUnqConId nx n) <+> text "::"
                     <+> text "XMLParser" <+> ppConId nx t
-                $$ (text "element" <> ppUnqConId nx n) <+> text "="
+                $$ (text "element" PP.<> ppUnqConId nx n) <+> text "="
                    <+> vcat (intersperse (text "`onFail`") (map ppOne substgrp)
                              ++ [text "`onFail` fail" <+> errmsg])
-                $$ (text "elementToXML" <> ppUnqConId nx n) <+> text "::"
+                $$ (text "elementToXML" PP.<> ppUnqConId nx n) <+> text "::"
                     <+> ppConId nx t <+> text "-> [Content ()]"
-                $$ (text "elementToXML" <> ppUnqConId nx n) <+> text "="
-                    <+> (text "schemaTypeToXML \"" <> ppXName n <> text "\"")
+                $$ (text "elementToXML" PP.<> ppUnqConId nx n) <+> text "="
+                    <+> (text "schemaTypeToXML \"" PP.<> ppXName n PP.<> text "\"")
             --  $$ vcat (map elementToXML substgrp)
 --  | otherwise = ppElementAbstractOfType nx e
   where
     notInScope (_,Just _)  = True
     notInScope (_,Nothing) = False
     ppOne (c,Nothing) = text "fmap" <+> text "supertype" -- ppJoinConId nx t c
-                        <+> (text "element" <> ppConId nx c)
+                        <+> (text "element" PP.<> ppConId nx c)
     ppOne (c,Just _)  = text "fmap" <+> text "supertype" -- ppJoinConId nx t c
-                        <+> (text "element" <> ppConId nx c)
+                        <+> (text "element" PP.<> ppConId nx c)
                         <+> text "-- FIXME: element is forward-declared"
     errmsg = text "\"Parse failed when expecting an element in the substitution group for\\n\\\n\\    <"
-             <> ppXName n <> text ">,\\n\\\n\\  namely one of:\\n\\\n\\<"
-             <> hcat (intersperse (text ">, <")
+             PP.<> ppXName n PP.<> text ">,\\n\\\n\\  namely one of:\\n\\\n\\<"
+             PP.<> hcat (intersperse (text ">, <")
                                   (map (ppXName . fst) substgrp))
-             <> text ">\""
---  elementToXML (c,_) = (text "elementToXML" <> ppUnqConId nx n)
---                       <+> text "(" <> ppJoinConId nx t c
---                       <+> text " x) = elementToXML" <> ppUnqConId nx c
+             PP.<> text ">\""
+--  elementToXML (c,_) = (text "elementToXML" PP.<> ppUnqConId nx n)
+--                       <+> text "(" PP.<> ppJoinConId nx t c
+--                       <+> text " x) = elementToXML" PP.<> ppUnqConId nx c
 --                       <+> text "x"
 
 
@@ -516,7 +516,7 @@ ppHighLevelDecl nx (Choice t es comm) =
         <+> nest 4 ( ppvList "=" "|" "" choices (zip es [1..])
                    $$ text "deriving (Eq,Show)" )
   where
-    choices (e,n) = (ppUnqConId nx t <> text (show n))
+    choices (e,n) = (ppUnqConId nx t PP.<> text (show n))
                     <+> ppConId nx (elem_type e)
 
 -- Comment out the Group for now.  Groups get inlined into the ComplexType
@@ -540,12 +540,12 @@ ppHighLevelDecl nx (RestrictComplexType t s comm) =
     $$ text "-- (parsing restrictions currently unimplemented)"
     $$ text "instance Restricts" <+> ppUnqConId nx t <+> ppConId nx s
                                  <+> text "where"
-        $$ nest 4 (text "restricts (" <> ppUnqConId nx t <+> text "x) = x")
+        $$ nest 4 (text "restricts (" PP.<> ppUnqConId nx t <+> text "x) = x")
     $$ text "instance SchemaType" <+> ppUnqConId nx t <+> text "where"
         $$ nest 4 (text "parseSchemaType = fmap " <+> ppUnqConId nx t <+>
                    text ". parseSchemaType")
 		-- XXX should enforce the restriction.
-        $$ nest 4 (text "schemaTypeToXML s (" <> ppUnqConId nx t <+> text "x)")
+        $$ nest 4 (text "schemaTypeToXML s (" PP.<> ppUnqConId nx t <+> text "x)")
                    <+> text "= schemaTypeToXML s x"
 
 {-
@@ -558,8 +558,8 @@ ppHighLevelDecl nx (ExtendComplexType t s es as _ comm)
                                     <+> text "deriving (Eq,Show)"
     $$ text "instance Extension" <+> ppConId nx t <+> ppConId nx s
                                  <+> ppAuxConId nx t <+> text "where"
-        $$ nest 4 (text "supertype (" <> ppConId nx t <> text " s e) = s"
-                   $$ text "extension (" <> ppConId nx t <> text " s e) = e")
+        $$ nest 4 (text "supertype (" PP.<> ppConId nx t PP.<> text " s e) = s"
+                   $$ text "extension (" PP.<> ppConId nx t PP.<> text " s e) = e")
 -}
 
 ppHighLevelDecl nx (ExtendComplexType t s oes oas es as
@@ -607,12 +607,12 @@ ppHighLevelInstances nx (ElementsAttrsAbstract t insts comm) =
                              text "$ parseSchemaType s)"
     ppParse (name,Just _)  = text "(return" <+> con name <+>
                              text "`apply` (fmap const $ parseSchemaType s)" <+>
-                             text "`apply` return" <+> fwd name <> text ")"
+                             text "`apply` return" <+> fwd name PP.<> text ")"
     errmsg = text "\"Parse failed when expecting an extension type of"
-             <+> ppXName t <> text ",\\n\\\n\\  namely one of:\\n\\\n\\"
-             <> hcat (intersperse (text ",")
+             <+> ppXName t PP.<> text ",\\n\\\n\\  namely one of:\\n\\\n\\"
+             PP.<> hcat (intersperse (text ",")
                                   (map (ppXName . fst) insts))
-             <> text "\""
+             PP.<> text "\""
     fwd name = ppFwdConId nx name
     con name = ppJoinConId nx t name
 
@@ -643,22 +643,22 @@ ppHighLevelInstances nx (ExtendComplexTypeAbstract t s insts
 
 ppElementAbstractOfType nx (ElementAbstractOfType n t substgrp comm) =
     ppComment Before comm
-    $$ (text "element" <> ppUnqConId nx n) <+> text "::"
+    $$ (text "element" PP.<> ppUnqConId nx n) <+> text "::"
         <+> text "XMLParser" <+> ppConId nx t
-    $$ (text "element" <> ppUnqConId nx n) <+> text "="
+    $$ (text "element" PP.<> ppUnqConId nx n) <+> text "="
        <+> vcat (intersperse (text "`onFail`") (map ppOne substgrp)
                  ++ [text "`onFail` fail" <+> errmsg])
   where
     ppOne (c,Nothing) = text "fmap" <+> text "supertype" -- ppJoinConId nx t c
-                        <+> (text "element" <> ppConId nx c)
+                        <+> (text "element" PP.<> ppConId nx c)
     ppOne (c,Just _)  = text "fmap" <+> text "supertype" -- ppJoinConId nx t c
-                        <+> (text "element" <> ppConId nx c)
+                        <+> (text "element" PP.<> ppConId nx c)
                         <+> text "-- FIXME: element is forward-declared"
     errmsg = text "\"Parse failed when expecting an element in the substitution group for\\n\\\n\\    <"
-             <> ppXName n <> text ">,\\n\\\n\\  namely one of:\\n\\\n\\<"
-             <> hcat (intersperse (text ">, <")
+             PP.<> ppXName n PP.<> text ">,\\n\\\n\\  namely one of:\\n\\\n\\<"
+             PP.<> hcat (intersperse (text ">, <")
                                   (map (ppXName . fst) substgrp))
-             <> text ">\""
+             PP.<> text ">\""
 
 ----------------------------------------------------------------------------- -}
 
@@ -678,8 +678,8 @@ ppExtension nx t s fwdReqd abstractSuper oes oas es as =
                                  --    else text "v")
                                       text "v")
            else
-           nest 4 (text "supertype (" <> ppType t (oes++es) (oas++as)
-                                      <> text ") ="
+           nest 4 (text "supertype (" PP.<> ppType t (oes++es) (oas++as)
+                                      PP.<> text ") ="
                                       $$ nest 11 (ppType s oes oas) ))
 --  $$ (if isJust fwdReqd then
 --     -- text "data" <+> fwd t <+> text "=" <+> fwd t $$  -- already defined
@@ -705,11 +705,11 @@ ppSuperExtension nx super (grandSuper:_) (t,Nothing) =
     $$ nest 4 (text "supertype = (supertype ::"
                                            <+> ppUnqConId nx super
                                            <+> text "->"
-                                           <+> ppConId nx grandSuper <> text ")"
+                                           <+> ppConId nx grandSuper PP.<> text ")"
               $$ nest 12 (text ". (supertype ::"
                                            <+> ppUnqConId nx t
                                            <+> text "->"
-                                           <+> ppConId nx super <> text ")"))
+                                           <+> ppConId nx super PP.<> text ")"))
 -}
 ppSuperExtension nx super grandSupers (t,Just mod) =  -- fwddecl
     text "-- Note that" <+> ppUnqConId nx t
@@ -726,7 +726,7 @@ ppSuperExtension nx super grandSupers (t,Nothing) =
                       (ppvList "=" "." "" coerce (zip (tail gss++[t]) gss)))
     coerce (a,b) = text "(supertype ::" <+> ppUnqConId nx a
                                         <+> text "->"
-                                        <+> ppConId nx b <> text ")"
+                                        <+> ppConId nx b PP.<> text ")"
 
 -- | Generate named fields from elements and attributes.
 ppFields :: NameConverter -> XName -> [Element] -> [Attribute] -> Doc
@@ -764,14 +764,14 @@ ppElemTypeName nx brack e@Element{} =
     ppTypeModifier (elem_modifier e) brack $ ppConId nx (elem_type e)
 ppElemTypeName nx brack e@OneOf{}   = 
     brack $ ppTypeModifier (liftedElemModifier e) parens $
-    text "OneOf" <> text (show (length (elem_oneOf e)))
+    text "OneOf" PP.<> text (show (length (elem_oneOf e)))
      <+> hsep (map (ppSeq . cleanChoices) (elem_oneOf e))
   where
     ppSeq []  = text "()"
     ppSeq [e] = ppElemTypeName nx parens e
-    ppSeq es  = text "(" <> hcat (intersperse (text ",")
+    ppSeq es  = text "(" PP.<> hcat (intersperse (text ",")
                                      (map (ppElemTypeName nx parens) es))
-                         <> text ")"
+                         PP.<> text ")"
 ppElemTypeName nx brack e@AnyElem{} =
     brack $ ppTypeModifier (elem_modifier e) id $
     text "AnyElement"
@@ -792,7 +792,7 @@ ppTypeModifier Single   _ d  = d
 ppTypeModifier Optional k d  = k $ text "Maybe" <+> k d
 ppTypeModifier (Range (Occurs Nothing Nothing))  _ d = d
 ppTypeModifier (Range (Occurs (Just 0) Nothing)) k d = k $ text "Maybe" <+> k d
-ppTypeModifier (Range (Occurs _ _))              _ d = text "[" <> d <> text "]"
+ppTypeModifier (Range (Occurs _ _))              _ d = text "[" PP.<> d PP.<> text "]"
 
 -- | Generate a parser for a list or Maybe value.
 ppElemModifier :: Modifier -> Doc -> Doc

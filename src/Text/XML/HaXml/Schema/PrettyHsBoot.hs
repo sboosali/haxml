@@ -22,7 +22,7 @@ import Data.Maybe (isJust,fromJust,catMaybes)
 -- | Vertically pretty-print a list of things, with open and close brackets,
 --   and separators.
 ppvList :: String -> String -> String -> (a->Doc) -> [a] -> Doc
-ppvList open sep close pp []     = text open <> text close
+ppvList open sep close pp []     = text open PP.<> text close
 ppvList open sep close pp (x:xs) = text open <+> pp x
                                    $$ vcat (map (\y-> text sep <+> pp y) xs)
                                    $$ text close
@@ -47,7 +47,7 @@ ppHName (HName x) = text x
 -- | Pretty-print an XML-style name.
 ppXName :: XName -> Doc
 ppXName (XName (N x))     = text x
-ppXName (XName (QN ns x)) = text (nsPrefix ns) <> text ":" <> text x
+ppXName (XName (QN ns x)) = text (nsPrefix ns) PP.<> text ":" PP.<> text x
 
 -- | Some different ways of using a Haskell identifier.
 ppModId, ppConId, ppVarId, ppUnqConId, ppUnqVarId, ppFwdConId
@@ -60,7 +60,7 @@ ppUnqVarId nx = ppHName . unqvarid nx
 ppFwdConId nx = ppHName . fwdconid nx
 
 ppJoinConId, ppFieldId :: NameConverter -> XName -> XName -> Doc
-ppJoinConId nx p q = ppHName (conid nx p) <> text "_" <> ppHName (conid nx q)
+ppJoinConId nx p q = ppHName (conid nx p) PP.<> text "_" PP.<> ppHName (conid nx q)
 ppFieldId   nx     = \t-> ppHName . fieldid nx t
 
 -- | Convert a whole document from HaskellTypeModel to Haskell source text.
@@ -88,19 +88,19 @@ ppModule nx m =
 
 -- | Generate a fragmentary parser for an attribute.
 ppAttr :: Attribute -> Int -> Doc
-ppAttr a n = (text "a"<>text (show n)) <+> text "<- getAttribute \""
-                                       <> ppXName (attr_name a)
-                                       <> text "\" e pos"
+ppAttr a n = (text "a"PP.<>text (show n)) <+> text "<- getAttribute \""
+                                       PP.<> ppXName (attr_name a)
+                                       PP.<> text "\" e pos"
 -- | Generate a fragmentary parser for an element.
 ppElem :: NameConverter -> Element -> Doc
 ppElem nx e@Element{}
     | elem_byRef e    = ppElemModifier (elem_modifier e)
                                        (text "element"
-                                        <> ppUnqConId nx (elem_name e))
+                                        PP.<> ppUnqConId nx (elem_name e))
     | otherwise       = ppElemModifier (elem_modifier e)
                                        (text "parseSchemaType \""
-                                        <> ppXName (elem_name e)
-                                        <> text "\"")
+                                        PP.<> ppXName (elem_name e)
+                                        PP.<> text "\"")
 ppElem nx e@AnyElem{} = ppElemModifier (elem_modifier e)
                           (text "parseAnyElement")
 ppElem nx e@Text{}    = text "parseText"
@@ -191,17 +191,17 @@ ppHighLevelDecl nx (ElementsAttrsAbstract t insts comm) =
 
 ppHighLevelDecl nx (ElementOfType e@Element{}) =
     ppComment Before (elem_comment e)
-    $$ (text "element" <> ppUnqConId nx (elem_name e)) <+> text "::"
+    $$ (text "element" PP.<> ppUnqConId nx (elem_name e)) <+> text "::"
         <+> text "XMLParser" <+> ppConId nx (elem_type e)
-    $$ (text "elementToXML" <> ppUnqConId nx (elem_name e)) <+> text "::"
+    $$ (text "elementToXML" PP.<> ppUnqConId nx (elem_name e)) <+> text "::"
         <+> ppConId nx (elem_type e) <+> text "-> [Content ()]"
 
 
 ppHighLevelDecl nx e@(ElementAbstractOfType n t substgrp comm)
     | any notInScope substgrp
-                = (text "element" <> ppUnqConId nx n) <+> text "::"
+                = (text "element" PP.<> ppUnqConId nx n) <+> text "::"
                       <+> text "XMLParser" <+> ppConId nx t
-                $$ (text "elementToXML" <> ppUnqConId nx n) <+> text "::"
+                $$ (text "elementToXML" PP.<> ppUnqConId nx n) <+> text "::"
                     <+> ppConId nx t <+> text "-> [Content ()]"
     | otherwise = ppElementAbstractOfType nx e
   where
@@ -245,8 +245,8 @@ ppHighLevelDecl nx (ExtendComplexType t s es as _ comm)
                                     <+> ppFields nx t es as
     $$ text "instance Extension" <+> ppConId nx t <+> ppConId nx s
                                  <+> ppAuxConId nx t <+> text "where"
-        $$ nest 4 (text "supertype (" <> ppConId nx t <> text " s e) = s"
-                   $$ text "extension (" <> ppConId nx t <> text " s e) = e")
+        $$ nest 4 (text "supertype (" PP.<> ppConId nx t PP.<> text " s e) = s"
+                   $$ text "extension (" PP.<> ppConId nx t PP.<> text " s e) = e")
 -}
 
 ppHighLevelDecl nx (ExtendComplexType t s oes oas es as
@@ -312,7 +312,7 @@ ppHighLevelInstances nx (ExtendComplexTypeAbstract t s insts
 
 ppElementAbstractOfType nx (ElementAbstractOfType n t substgrp comm) =
     ppComment Before comm
-    $$ (text "element" <> ppUnqConId nx n) <+> text "::"
+    $$ (text "element" PP.<> ppUnqConId nx n) <+> text "::"
         <+> text "XMLParser" <+> ppConId nx t
 
 --------------------------------------------------------------------------------
@@ -334,11 +334,11 @@ ppSuperExtension nx super (grandSuper:_) (t,Nothing) =
     $$ nest 4 (text "supertype = (supertype ::"
                                            <+> ppUnqConId nx super
                                            <+> text "->"
-                                           <+> ppConId nx grandSuper <> text ")"
+                                           <+> ppConId nx grandSuper PP.<> text ")"
               $$ nest 12 (text ". (supertype ::"
                                            <+> ppUnqConId nx t
                                            <+> text "->"
-                                           <+> ppConId nx super <> text ")"))
+                                           <+> ppConId nx super PP.<> text ")"))
 -}
 ppSuperExtension nx super (grandSuper:_) (t,Just mod) =  -- fwddecl
     -- FIXME: generate comment for all of the grandSupers.
@@ -379,14 +379,14 @@ ppElemTypeName nx brack e@Element{} =
     ppTypeModifier (elem_modifier e) brack $ ppConId nx (elem_type e)
 ppElemTypeName nx brack e@OneOf{}   = 
     brack $ ppTypeModifier (elem_modifier e) parens $
-    text "OneOf" <> text (show (length (elem_oneOf e)))
+    text "OneOf" PP.<> text (show (length (elem_oneOf e)))
      <+> hsep (map ppSeq (elem_oneOf e))
   where
     ppSeq []  = text "()"
     ppSeq [e] = ppElemTypeName nx parens e
-    ppSeq es  = text "(" <> hcat (intersperse (text ",")
+    ppSeq es  = text "(" PP.<> hcat (intersperse (text ",")
                                      (map (ppElemTypeName nx parens) es))
-                         <> text ")"
+                         PP.<> text ")"
 ppElemTypeName nx brack e@AnyElem{} =
     brack $ ppTypeModifier (elem_modifier e) id $
     text "AnyElement"
@@ -405,7 +405,7 @@ ppTypeModifier Single   _ d  = d
 ppTypeModifier Optional k d  = k $ text "Maybe" <+> k d
 ppTypeModifier (Range (Occurs Nothing Nothing))  _ d = d
 ppTypeModifier (Range (Occurs (Just 0) Nothing)) k d = k $ text "Maybe" <+> k d
-ppTypeModifier (Range (Occurs _ _))              _ d = text "[" <> d <> text "]"
+ppTypeModifier (Range (Occurs _ _))              _ d = text "[" PP.<> d PP.<> text "]"
 
 -- | Generate a parser for a list or Maybe value.
 ppElemModifier Single    doc = doc

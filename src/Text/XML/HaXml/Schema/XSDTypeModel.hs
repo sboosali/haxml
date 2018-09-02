@@ -291,17 +291,21 @@ type Regexp        = String
 type URI           = String
 type TypeName      = String
 
+instance Semigroup Annotation where
+  (Documentation d) <> (Documentation e) = Documentation (d++"\n"++e)
+  _                 <> (Documentation e) = Documentation e
+  ann               <> _                 = ann          
+  
 instance Monoid Annotation where
   mempty = NoAnnotation "Monoid.mempty <Annotation>"
-  (Documentation d) `mappend` (Documentation e) = Documentation (d++"\n"++e)
-  _                 `mappend` (Documentation e) = Documentation e
-  ann               `mappend` _                 = ann          
 
+instance Semigroup Schema where
+  s <> t = s{ schema_items = schema_items s ++ schema_items t }
+  
 -- This instance is pretty unsatisfactory, and is useful only for
 -- building environments involving recursive modules.  The /mappend/
 -- method is left-biased, and the /mempty/ value contains lots of
 -- undefined values.
 instance Monoid Schema where
   mempty        = Schema{ schema_items=[] }
-  s `mappend` t = s{ schema_items = schema_items s ++ schema_items t }
 

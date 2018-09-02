@@ -5,7 +5,7 @@ import Text.XML.HaXml.Namespaces
 import Text.XML.HaXml.TypeMapping -- (toHType, toDTD, Tuple(), Defined, showHType)
 
 import qualified Text.XML.HaXml.XmlContent as X
-import Prelude hiding (maybe,either)
+import Prelude hiding (maybe,either,(<>))
 import Data.Maybe hiding (maybe)
 import Data.List
 

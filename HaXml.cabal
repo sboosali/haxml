@@ -1,19 +1,28 @@
 name:           HaXml
-version:        1.25.4
-x-revision: 1
+version:        1.25.6
+--x-revision:     0
 license:        LGPL
 license-file:   COPYRIGHT
 author:         Malcolm Wallace <Malcolm.Wallace@me.com>
-maintainer:     author
+maintainer:     Malcolm Wallace <Malcolm.Wallace@me.com>, Spiros Boosalis <samboosalis@gmail.com>
+bug-reports:    http://github.com/sboosali/HaXml2/issues
+copyright:      Malcolm Wallace 2017, 2018 Spiros Boosalis
 homepage:       http://projects.haskell.org/HaXml/
 category:       Text, XML
 synopsis:       Utilities for manipulating XML documents
 description:
+        (Fork of @HaXml@. If you are the maintainer, please add a repository and issue-tracker).
+        .
         Haskell utilities for parsing, filtering, transforming and
         generating XML documents.
 build-type:     Simple
 cabal-version:  >=1.8
-extra-source-files:    LICENCE-GPL, LICENCE-LGPL
+extra-source-files:    LICENCE-GPL, LICENCE-LGPL, Makefile
+tested-with:     GHC == 8.4.3
+
+source-repository head
+  type:     git
+  location: git://github.com/sboosali/HaXml2.git
 
 flag splitBase
   default: True
@@ -70,7 +79,7 @@ library
   hs-source-dirs: src
   build-depends: polyparse >= 1.10, filepath
   if flag(splitBase)
-    build-depends: base >= 3 && < 4.11, pretty, random, containers
+    build-depends: base >= 3 && < 4.12, pretty, random, containers
   else
     build-depends: base < 3
   if flag(bytestringInBase)
