@@ -1,8 +1,10 @@
-name:           HaXml
+cabal-version:  2.2
+
+name:           HaXml2
 version:        1.25.6
 --x-revision:     0
-license:        LGPL
-license-file:   COPYRIGHT
+license:        LGPL-3.0-only
+license-file:   LICENSE.LGPL.3.txt
 author:         Malcolm Wallace <Malcolm.Wallace@me.com>
 maintainer:     Malcolm Wallace <Malcolm.Wallace@me.com>, Spiros Boosalis <samboosalis@gmail.com>
 bug-reports:    http://github.com/sboosali/HaXml2/issues
@@ -16,8 +18,7 @@ description:
         Haskell utilities for parsing, filtering, transforming and
         generating XML documents.
 build-type:     Simple
-cabal-version:  >=1.8
-extra-source-files:    LICENCE-GPL, LICENCE-LGPL, Makefile
+extra-source-files: LICENSE.LGPL.3.txt, Makefile
 tested-with:     GHC == 8.4.3
 
 source-repository head
@@ -94,53 +95,53 @@ Executable Canonicalise
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Canonicalise.hs
-  build-depends: base, HaXml, pretty
+  build-depends: base, HaXml2, pretty
 
 Executable CanonicaliseLazy
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: CanonicaliseLazy.hs
-  build-depends: base, HaXml, pretty
+  build-depends: base, HaXml2, pretty
 
 Executable Xtract
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Xtract.hs
-  build-depends: base, HaXml, pretty
+  build-depends: base, HaXml2, pretty
 
 Executable Validate
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Validate.hs
-  build-depends: base, HaXml
+  build-depends: base, HaXml2
 
 Executable MkOneOf
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: MkOneOf.hs
-  build-depends: base, HaXml
+  build-depends: base, HaXml2
 
 Executable DtdToHaskell
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: DtdToHaskell.hs
-  build-depends: base, HaXml, pretty
+  build-depends: base, HaXml2, pretty
 
 Executable XsdToHaskell
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: XsdToHaskell.hs
-  build-depends: base, HaXml, pretty, polyparse, directory
+  build-depends: base, HaXml2, pretty, polyparse, directory
 
 Executable FpMLToHaskell
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: FpMLToHaskell.hs
-  build-depends: base, HaXml, pretty, polyparse, directory
+  build-depends: base, HaXml2, pretty, polyparse, directory
