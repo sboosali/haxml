@@ -279,8 +279,8 @@ data Constraint    = Unique Selector [Field]
                    | Key    Selector [Field]
                    | KeyRef Selector [Field]
                      deriving (Eq,Show)
-type Selector      = String	-- XPath query for scope of constraint
-type Field         = String	-- XPath query for entity being constrained
+type Selector      = String    -- XPath query for scope of constraint
+type Field         = String    -- XPath query for entity being constrained
 -}
 
 -- check all of the following.

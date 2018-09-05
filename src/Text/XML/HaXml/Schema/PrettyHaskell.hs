@@ -544,7 +544,7 @@ ppHighLevelDecl nx (RestrictComplexType t s comm) =
     $$ text "instance SchemaType" <+> ppUnqConId nx t <+> text "where"
         $$ nest 4 (text "parseSchemaType = fmap " <+> ppUnqConId nx t <+>
                    text ". parseSchemaType")
-		-- XXX should enforce the restriction.
+                   -- XXX should enforce the restriction.
         $$ nest 4 (text "schemaTypeToXML s (" PP.<> ppUnqConId nx t <+> text "x)")
                    <+> text "= schemaTypeToXML s x"
 

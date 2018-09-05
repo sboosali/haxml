@@ -109,7 +109,7 @@ xmlParse  name  = fst3 . runParser (toEOF document) emptySTs . xmlLex name
 dtdParse  name  = fst3 . runParser justDTD  emptySTs . xmlLex name
 
 toEOF :: XParser a -> XParser a
-toEOF = id	-- there are other possible implementations...
+toEOF = id    -- there are other possible implementations...
 
 -- | To parse a partial document, e.g. from an XML-based stream protocol,
 --   where you may later want to get more document elements from the same

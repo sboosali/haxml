@@ -329,17 +329,17 @@ element ctx =
               return ([], Elem (N "null") [] []))
       else if e `elem` selfclosingtags then
          -- complete the parse straightaway.
-         ( do tok TokEndClose	-- self-closing <tag /> 
+         ( do tok TokEndClose    -- self-closing <tag /> 
               debug (e++"[+]")
               return ([], Elem (N e) avs [])) `onFail`
-     --  ( do tok TokAnyClose	-- sequence <tag></tag>	(**not HTML?**)
+     --  ( do tok TokAnyClose    -- sequence <tag></tag>    (**not HTML?**)
      --       debug (e++"[+")
      --       n <- bracket (tok TokEndOpen) (commit $ tok TokAnyClose) qname
      --       debug "]"
      --       if e == (map toLower n :: Name) 
      --         then return ([], Elem e avs [])      
      --         else return (error "no nesting in empty tag")) `onFail`
-         ( do tok TokAnyClose	-- <tag> with no close (e.g. <IMG>)
+         ( do tok TokAnyClose    -- <tag> with no close (e.g. <IMG>)
               debug (e++"[+]")
               return ([], Elem (N e) avs []))
       else
@@ -715,12 +715,12 @@ attvalue =
 systemliteral :: HParser SystemLiteral
 systemliteral = do
     s <- bracket (tok TokQuote) (commit $ tok TokQuote) freetext
-    return (SystemLiteral s)		-- note: need to fold &...; escapes
+    return (SystemLiteral s)        -- note: need to fold &...; escapes
 
 pubidliteral :: HParser PubidLiteral
 pubidliteral = do
     s <- bracket (tok TokQuote) (commit $ tok TokQuote) freetext
-    return (PubidLiteral s)		-- note: need to fold &...; escapes
+    return (PubidLiteral s)    -- note: need to fold &...; escapes
 
 chardata :: HParser CharData
 chardata = freetext -- >>= return . CharData
