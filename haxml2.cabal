@@ -1,34 +1,52 @@
 cabal-version:  2.2
+build-type:     Simple
 
-name:           HaXml2
+name:           haxml2
 version:        1.25.6
+
 --x-revision:     0
+
+----------------------------------------
+
+category:       Text, XML
+synopsis:       Utilities for manipulating XML documents
+description:
+            Haskell utilities for parsing, filtering, transforming and generating XML documents.
+            .
+            Fork of @HaXml@.
+            .
+            (If you are the maintainer, please: [1] add your repository and issue-tracker (see below);
+            and [2] review the emailed patch, also here <>. The patch preserves the package name as @HaXml@.)
+            .
+
+tested-with:
+  GHC == 8.4.3
+
 license:        LGPL-3.0-only
 license-file:   LICENSE.LGPL.3.txt
 author:         Malcolm Wallace <Malcolm.Wallace@me.com>
 maintainer:     Malcolm Wallace <Malcolm.Wallace@me.com>, Spiros Boosalis <samboosalis@gmail.com>
-bug-reports:    http://github.com/sboosali/HaXml2/issues
 copyright:      Malcolm Wallace 2017, 2018 Spiros Boosalis
 homepage:       http://projects.haskell.org/HaXml/
-category:       Text, XML
-synopsis:       Utilities for manipulating XML documents
-description:
-        (Fork of @HaXml@. If you are the maintainer, please add a repository and issue-tracker).
-        .
-        Haskell utilities for parsing, filtering, transforming and
-        generating XML documents.
-build-type:     Simple
+
 extra-source-files: LICENSE.LGPL.3.txt, Makefile
-tested-with:     GHC == 8.4.3
+
+----------------------------------------
+
+bug-reports:    http://github.com/sboosali/haxml2/issues
 
 source-repository head
   type:     git
-  location: git://github.com/sboosali/HaXml2.git
+  location: git://github.com/sboosali/haxml2.git
+
+----------------------------------------
 
 flag splitBase
   default: True
 flag bytestringInBase
   default: False
+
+----------------------------------------
 
 library
   exposed-modules:
@@ -90,58 +108,76 @@ library
   extensions: CPP, ExistentialQuantification
   nhc98-options: -K10M
 
+----------------------------------------
+
 Executable Canonicalise
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Canonicalise.hs
-  build-depends: base, HaXml2, pretty
+  build-depends: base, haxml2, pretty
+
+----------------------------------------
 
 Executable CanonicaliseLazy
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: CanonicaliseLazy.hs
-  build-depends: base, HaXml2, pretty
+  build-depends: base, haxml2, pretty
+
+----------------------------------------
 
 Executable Xtract
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Xtract.hs
-  build-depends: base, HaXml2, pretty
+  build-depends: base, haxml2, pretty
+
+----------------------------------------
 
 Executable Validate
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Validate.hs
-  build-depends: base, HaXml2
+  build-depends: base, haxml2
+
+----------------------------------------
 
 Executable MkOneOf
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: MkOneOf.hs
-  build-depends: base, HaXml2
+  build-depends: base, haxml2
+
+----------------------------------------
 
 Executable DtdToHaskell
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: DtdToHaskell.hs
-  build-depends: base, HaXml2, pretty
+  build-depends: base, haxml2, pretty
+
+----------------------------------------
 
 Executable XsdToHaskell
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: XsdToHaskell.hs
-  build-depends: base, HaXml2, pretty, polyparse, directory
+  build-depends: base, haxml2, pretty, polyparse, directory
+
+----------------------------------------
 
 Executable FpMLToHaskell
   GHC-Options: -Wall
   Extensions:  CPP
   Hs-Source-Dirs: src/tools
   Main-Is: FpMLToHaskell.hs
-  build-depends: base, HaXml2, pretty, polyparse, directory
+  build-depends: base, haxml2, pretty, polyparse, directory
+
+----------------------------------------
