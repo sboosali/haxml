@@ -29,6 +29,7 @@ escape = xmlEscapeContent stdXmlEscaper
 
 data Opts = Opts {doEscaping :: Bool, forceHtml :: Bool, printHelp :: Bool, printVersion :: Bool, beLazy :: Bool}
 
+defaultOptions :: Opts
 defaultOptions = Opts {doEscaping = True, forceHtml = False, printHelp = False, printVersion = False, beLazy = False}
 
 options :: [OptDescr (Opts -> Opts)]
@@ -48,7 +49,7 @@ options = [
 main :: IO ()
 main = do
   preArgs <- getArgs
-  let (preOpts, args, errs) = getOpt Permute options preArgs
+  let (preOpts, args, _errs) = getOpt Permute options preArgs
   let opts = foldl (flip ($)) defaultOptions preOpts
   when (printVersion opts) $ do
       putStrLn $ "part of HaXml-"++version

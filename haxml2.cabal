@@ -16,11 +16,12 @@ description:
             Fork of @HaXml@.
             .
             (If you are the maintainer, please: [1] add your repository and issue-tracker (see below);
-            and [2] review the emailed patch, also here <>. The patch preserves the package name as @HaXml@.)
+            and [2] review the emailed patch, also here <TODO>. The patch preserves the package name as @HaXml@.)
             .
 
 tested-with:
-  GHC == 8.4.3
+    GHC == 8.4.3
+  -- , GHC == 8.6.1
 
 license:        LGPL-3.0-only
 license-file:   LICENSE.LGPL.3.txt
@@ -49,6 +50,9 @@ flag bytestringInBase
 ----------------------------------------
 
 library
+
+  hs-source-dirs: src
+
   exposed-modules:
         Text.XML.HaXml,
         Text.XML.HaXml.ByteStringPP,
@@ -92,27 +96,31 @@ library
         Text.XML.HaXml.Xtract.Combinators,
         Text.XML.HaXml.Xtract.Lex,
         Text.XML.HaXml.Xtract.Parse
+
   if impl(ghc)
     exposed-modules:
         Text.XML.HaXml.Schema.Schema
-  hs-source-dirs: src
-  build-depends: polyparse >= 1.10, filepath
+
+  build-depends: polyparse >= 1.20, filepath
   if flag(splitBase)
-    build-depends: base >= 3 && < 4.12, pretty, random, containers
+    build-depends: base >= 3 && < 5, pretty, random, containers
   else
     build-depends: base < 3
   if flag(bytestringInBase)
     build-depends: base >= 2 && < 3
   else
     build-depends: base < 2 || >= 3, bytestring
-  extensions: CPP, ExistentialQuantification
+
+  default-language:   Haskell98
+  default-extensions: CPP, ExistentialQuantification
   nhc98-options: -K10M
 
 ----------------------------------------
 
 Executable Canonicalise
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Canonicalise.hs
   build-depends: base, haxml2, pretty
@@ -121,7 +129,8 @@ Executable Canonicalise
 
 Executable CanonicaliseLazy
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: CanonicaliseLazy.hs
   build-depends: base, haxml2, pretty
@@ -130,7 +139,8 @@ Executable CanonicaliseLazy
 
 Executable Xtract
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Xtract.hs
   build-depends: base, haxml2, pretty
@@ -139,7 +149,8 @@ Executable Xtract
 
 Executable Validate
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Validate.hs
   build-depends: base, haxml2
@@ -148,7 +159,8 @@ Executable Validate
 
 Executable MkOneOf
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: MkOneOf.hs
   build-depends: base, haxml2
@@ -157,7 +169,8 @@ Executable MkOneOf
 
 Executable DtdToHaskell
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: DtdToHaskell.hs
   build-depends: base, haxml2, pretty
@@ -166,7 +179,8 @@ Executable DtdToHaskell
 
 Executable XsdToHaskell
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: XsdToHaskell.hs
   build-depends: base, haxml2, pretty, polyparse, directory
@@ -175,7 +189,8 @@ Executable XsdToHaskell
 
 Executable FpMLToHaskell
   GHC-Options: -Wall
-  Extensions:  CPP
+  default-language: Haskell98
+  default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: FpMLToHaskell.hs
   build-depends: base, haxml2, pretty, polyparse, directory
