@@ -2,8 +2,17 @@ module Text.XML.HaXml.Schema.XSDTypeModel
   ( module Text.XML.HaXml.Schema.XSDTypeModel
   ) where
 
-import Data.Monoid hiding (Any)
 import Text.XML.HaXml.Types      (Name,Namespace,QName)
+
+----------------------------------------
+
+import Data.Monoid    (Monoid(..))
+
+#if MIN_VERSION_base(4,9,0)
+import Data.Semigroup (Semigroup(..))
+#endif
+
+--------------------------------------------------------------------------------
 
 data Schema        = Schema
                    --  { schema_annotation           :: Annotation

@@ -15,7 +15,16 @@ import qualified Data.Map as Map
 import Data.Map (Map)
 import Data.List (foldl')
 import Data.Maybe (fromMaybe,fromJust,isNothing,isJust)
-import Data.Monoid
+
+----------------------------------------
+
+import Data.Monoid    (Monoid(..))
+
+#if MIN_VERSION_base(4,9,0)
+import Data.Semigroup (Semigroup(..))
+#endif
+
+--------------------------------------------------------------------------------
 
 -- | Transform a Schema by lifting all locally-defined anonymous types to
 --   the top-level, naming them, and planting a referend at their original
@@ -537,7 +546,6 @@ consolidate (Occurs min max) (UnorderedMinLength,_,n) =
              Occurs (Just (read n)) max
 consolidate (Occurs min max) (UnorderedMaxLength,_,n) =
              Occurs min (Just (read n))
-
 
 --------------------------------------------------------------------------------
 
