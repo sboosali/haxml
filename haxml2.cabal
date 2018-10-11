@@ -2,7 +2,7 @@ cabal-version:  2.2
 build-type:     Simple
 
 name:           haxml2
-version:        1.25.6
+version:        1.30
 
 --x-revision:     0
 
