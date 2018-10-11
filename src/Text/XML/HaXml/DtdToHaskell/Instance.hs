@@ -19,7 +19,7 @@ mkInstance (DataDef _ n fs []) =
         topatval = if null fs then ppHName n else topat
     in
     text "instance HTypeable" <+> ppHName n <+> text "where" $$
-    nest 4 ( text "toHType x = Defined \"" <> ppXName n <> text "\" [] []" )
+    nest 4 ( text "toHType x = Defined \"" PP.<> ppXName n PP.<> text "\" [] []" )
     $$
     text "instance XmlContent" <+> ppHName n <+> text "where" $$
     nest 4 (

@@ -291,21 +291,57 @@ type Regexp        = String
 type URI           = String
 type TypeName      = String
 
-instance Semigroup Annotation where
-  (Documentation d) <> (Documentation e) = Documentation (d++"\n"++e)
-  _                 <> (Documentation e) = Documentation e
-  ann               <> _                 = ann          
-  
+--------------------------------------------------------------------------------
+
 instance Monoid Annotation where
   mempty = NoAnnotation "Monoid.mempty <Annotation>"
 
-instance Semigroup Schema where
-  s <> t = s{ schema_items = schema_items s ++ schema_items t }
-  
+#if defined(MIN_VERSION_base) && MIN_VERSION_base(4,9,0)
+  mappend = (<>)
+
+----------------------------------------
+
+instance Semigroup Annotation where
+  (<>) = mergeAnnotation
+
+----------------------------------------
+
+#else
+  mappend = mergeAnnotation
+
+----------------------------------------
+#endif
+
+mergeAnnotation :: Annotation -> Annotation -> Annotation
+(Documentation d) `mergeAnnotation` (Documentation e) = Documentation (d++"\n"++e)
+_                 `mergeAnnotation` (Documentation e) = Documentation e
+ann               `mergeAnnotation` _                 = ann
+
+--------------------------------------------------------------------------------
+
 -- This instance is pretty unsatisfactory, and is useful only for
 -- building environments involving recursive modules.  The /mappend/
 -- method is left-biased, and the /mempty/ value contains lots of
 -- undefined values.
-instance Monoid Schema where
-  mempty        = Schema{ schema_items=[] }
 
+instance Monoid Schema where
+  mempty = Schema{ schema_items=[] }
+
+#if defined(MIN_VERSION_base) && MIN_VERSION_base(4,9,0)
+  mappend = (<>)
+
+----------------------------------------
+
+instance Semigroup Schema where
+  (<>) = mergeSchema
+
+#else
+  mappend = mergeSchema
+
+----------------------------------------
+#endif
+
+mergeSchema :: Schema -> Schema -> Schema
+s `mergeSchema` t = s{ schema_items = schema_items s ++ schema_items t }
+
+--------------------------------------------------------------------------------

@@ -121,7 +121,7 @@ ppTypeDef (EnumDef n es) =
 ppST :: StructType -> Doc
 ppST (Defaultable st _)  = parens (text "Defaultable" <+> ppST st)
 ppST (Maybe st)  = parens (text "Maybe" <+> ppST st)
-ppST (List st)   = text "[" <> ppST st <> text "]"
+ppST (List st)   = text "[" PP.<> ppST st PP.<> text "]"
 ppST (List1 st)  = parens (text "List1" <+> ppST st)
 ppST (Tuple sts) = parens (commaList (map ppST sts))
 ppST (OneOf sts) = parens (text "OneOf" PP.<> text (show (length sts)) <+>
@@ -151,7 +151,7 @@ ppXName :: Name -> Doc
 ppXName (Name s _) = text s
 -- | Pretty print Haskell attributes name.
 ppAName :: Name -> Doc
-ppAName (Name _ s) = text s <> text "_Attrs"
+ppAName (Name _ s) = text s PP.<> text "_Attrs"
 
 derives :: Doc
 derives = text "deriving" <+> parens (commaList (map text ["Eq","Show"]))
