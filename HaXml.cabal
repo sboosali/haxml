@@ -1,7 +1,7 @@
 cabal-version:  2.2
 build-type:     Simple
 
-name:           haxml2
+name:           HaXml
 version:        1.30
 
 --x-revision:     0
@@ -13,15 +13,13 @@ synopsis:       Utilities for manipulating XML documents
 description:
             Haskell utilities for parsing, filtering, transforming and generating XML documents.
             .
-            Fork of @HaXml@.
-            .
-            (If you are the maintainer, please: [1] add your repository and issue-tracker (see below);
-            and [2] review the emailed patch, also here <TODO>. The patch preserves the package name as @HaXml@.)
-            .
 
 tested-with:
-    GHC == 8.4.3
-  -- , GHC == 8.6.1
+            GHC == 7.10.3
+          , GHC == 8.0.2
+          , GHC == 8.2.2
+          , GHC == 8.4.3
+          , GHC == 8.6.1
 
 license:        LGPL-3.0-only
 license-file:   LICENSE.LGPL.3.txt
@@ -44,7 +42,11 @@ source-repository head
 
 flag splitBase
   default: True
+
 flag bytestringInBase
+  default: False
+
+flag executables
   default: False
 
 ----------------------------------------
@@ -101,7 +103,7 @@ library
     exposed-modules:
         Text.XML.HaXml.Schema.Schema
 
-  build-depends: polyparse >= 1.20, filepath
+  build-depends: polyparse >= 1.30, filepath
   if flag(splitBase)
     build-depends: base >= 3 && < 5, pretty, random, containers
   else
@@ -118,81 +120,113 @@ library
 ----------------------------------------
 
 Executable Canonicalise
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Canonicalise.hs
-  build-depends: base, haxml2, pretty
+  build-depends: base, HaXml, pretty
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
 
 Executable CanonicaliseLazy
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: CanonicaliseLazy.hs
-  build-depends: base, haxml2, pretty
+  build-depends: base, HaXml, pretty
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
 
 Executable Xtract
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Xtract.hs
-  build-depends: base, haxml2, pretty
+  build-depends: base, HaXml, pretty
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
 
 Executable Validate
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: Validate.hs
-  build-depends: base, haxml2
+  build-depends: base, HaXml
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
 
 Executable MkOneOf
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: MkOneOf.hs
-  build-depends: base, haxml2
+  build-depends: base, HaXml
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
 
 Executable DtdToHaskell
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: DtdToHaskell.hs
-  build-depends: base, haxml2, pretty
+  build-depends: base, HaXml, pretty
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
 
 Executable XsdToHaskell
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: XsdToHaskell.hs
-  build-depends: base, haxml2, pretty, polyparse, directory
+  build-depends: base, HaXml, pretty, polyparse, directory
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
 
 Executable FpMLToHaskell
+
   GHC-Options: -Wall
   default-language: Haskell98
   default-extensions: CPP
   Hs-Source-Dirs: src/tools
   Main-Is: FpMLToHaskell.hs
-  build-depends: base, haxml2, pretty, polyparse, directory
+  build-depends: base, HaXml, pretty, polyparse, directory
+
+  if !flag(executables)
+     buildable: False
 
 ----------------------------------------
